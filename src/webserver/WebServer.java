@@ -33,7 +33,12 @@ public class WebServer {
             Socket client = server.accept();
             cont ++;
             System.out.println("Numero de requisições TCP: " + cont);
-            client.close();
+            
+            /*Handling the request:*/
+            HttpRequest request = new HttpRequest(client);
+            // Create a new thread to process the request.
+            Thread thread = new Thread(request);
+            thread.start();
         }
     }
 }
@@ -59,7 +64,24 @@ final class HttpRequest implements Runnable{
     }
     
     private void processRequest() throws Exception{
-       
+       // Get a reference to the socket's input and output streams.
+        InputStream is = socket.getInputStream();
+
+        DataOutputStream os = new DataOutputStream(socket.getOutputStream());
+        
+        // Set up input stream filters.
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        
+        // reading the request line.
+        String requestLine = br.readLine();
+        System.out.println("HEADER = " + requestLine);
+        
+        // reading the header lines
+        String headerLine = null;
+        while ((headerLine = br.readLine()).length() != 0) {
+            System.out.println(headerLine);
+        }
+        System.out.println();   //skip a line between requests
     }
 
     
