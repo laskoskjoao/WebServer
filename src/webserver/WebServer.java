@@ -32,6 +32,7 @@ public class WebServer {
             // Listen for a TCP connection request.
             Socket client = server.accept();
             cont ++;
+            System.out.println();   //skip a line between requests
             System.out.println("Numero de requisições TCP: " + cont);
             
             /*Handling the request:*/
@@ -81,8 +82,99 @@ final class HttpRequest implements Runnable{
         while ((headerLine = br.readLine()).length() != 0) {
             System.out.println(headerLine);
         }
-        System.out.println();   //skip a line between requests
+        
+        
+        /*TRATANDO A REQUISIÇÃO*/
+        /*Extract the filename from the request line.*/
+        StringTokenizer tokens = new StringTokenizer(requestLine);
+        tokens.nextToken(); // skip over the method, which should be "GET"
+        String fileName = tokens.nextToken();           
+        // Prepend a "." so that file request is within the current directory.
+        fileName = "./resources" + fileName;
+        
+        // Open the requested file.
+        FileInputStream fis = null;
+        boolean fileExists = true;
+        try {
+            fis = new FileInputStream(fileName);
+        } catch (FileNotFoundException e) {
+            fileExists = false;
+        }
+        
+        /*Construct the response message.*/
+        String statusLine = null;
+        String contentTypeLine = null;
+        String entityBody = null;
+        if (fileExists) {
+            statusLine = "HTTP/1.1 200 OK" + CRLF;
+            contentTypeLine = "Content-type: " +
+            contentType( fileName ) + CRLF;
+        } else {
+            statusLine = "HTTP/1.1 404 Not Found" + CRLF;
+            contentTypeLine = "Content-type: " +
+            contentType( fileName ) + CRLF; //NAO TENHO CTZ SE TEM Q TER O CONTENTTYPE QND 404... (ChatGPT forneceu um exemplo que coloca)
+            entityBody = "<HTML>" +
+            "<HEAD><TITLE>Not Found</TITLE></HEAD>" +
+            "<BODY>Not Found</BODY></HTML>";
+
+        }
+
+        /*Sending data*/
+        // Send the status line.
+        os.writeBytes(statusLine);
+        // Send the content type line.
+        os.writeBytes(contentTypeLine);
+        // Send a blank line to indicate the end of the header lines.
+        os.writeBytes(CRLF);
+        
+        System.out.println();
+        System.out.println(statusLine);
+        System.out.println(contentTypeLine);
+        System.out.println(entityBody);
+        System.out.println();
+
+        // Send the entity body.
+        if (fileExists) {
+            sendBytes(fis, os);               // Send file to client
+            fis.close();
+        } else {
+            os.writeBytes(entityBody);      // 404 Not Found
+            System.out.println("A");
+        }
+        
+        System.out.println();
+        System.out.println();
+        System.out.println(fileExists);
+        System.out.println();
+        System.out.println();
+        
+        // Close streams and socket.
+        os.close();
+        br.close();
+        socket.close();               
+    }
+    
+    private static String contentType(String fileName){
+        if(fileName.endsWith(".htm") || fileName.endsWith(".html")) {
+            return "text/html";
+        }
+        if(fileName.endsWith(".gif")) {
+            return "image/gif";
+        }
+        if(fileName.endsWith(".jpeg")) {
+            return "image/jpeg";
+        }
+        return "application/octet-stream";
+    }
+    
+    private static void sendBytes(FileInputStream fis, OutputStream os) throws Exception{
+        // Construct a 1K buffer to hold bytes on their way to the socket.
+        byte[] buffer = new byte[1024];
+        int bytes = 0;
+        // Copy requested file into the socket's output stream.
+        while((bytes = fis.read(buffer)) != -1 ) {
+            os.write(buffer, 0, bytes);
+        }
     }
 
-    
 }
