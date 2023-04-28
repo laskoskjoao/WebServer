@@ -7,7 +7,6 @@ package webserver;
 import java.io.* ;
 import java.net.* ;
 import java.util.* ;
-
 /**
  *
  * @author João
@@ -31,9 +30,7 @@ public class WebServer {
         while (true) {
             // Listen for a TCP connection request.
             Socket client = server.accept();
-            cont ++;
             System.out.println();   //skip a line between requests
-            System.out.println("Numero de requisições TCP: " + cont);
             
             /*Handling the request:*/
             HttpRequest request = new HttpRequest(client);
@@ -65,26 +62,23 @@ final class HttpRequest implements Runnable{
     }
     
     private void processRequest() throws Exception{
-       // Get a reference to the socket's input and output streams.
+        // Get a reference to the socket's input and output streams.
         InputStream is = socket.getInputStream();
-
-        DataOutputStream os = new DataOutputStream(socket.getOutputStream());
-        
+        DataOutputStream os = new DataOutputStream(socket.getOutputStream());   
         // Set up input stream filters.
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         
         // reading the request line.
         String requestLine = br.readLine();
-        System.out.println("HEADER = " + requestLine);
+        System.out.println(requestLine);
         
         // reading the header lines
         String headerLine = null;
         while ((headerLine = br.readLine()).length() != 0) {
             System.out.println(headerLine);
         }
-        
-        
-        /*TRATANDO A REQUISIÇÃO*/
+         
+        /*Handling the request*/
         /*Extract the filename from the request line.*/
         StringTokenizer tokens = new StringTokenizer(requestLine);
         tokens.nextToken(); // skip over the method, which should be "GET"
@@ -112,11 +106,10 @@ final class HttpRequest implements Runnable{
         } else {
             statusLine = "HTTP/1.1 404 Not Found" + CRLF;
             contentTypeLine = "Content-type: " +
-            contentType( fileName ) + CRLF; //NAO TENHO CTZ SE TEM Q TER O CONTENTTYPE QND 404... (ChatGPT forneceu um exemplo que coloca)
+            "text/html" + CRLF; 
             entityBody = "<HTML>" +
-            "<HEAD><TITLE>Not Found</TITLE></HEAD>" +
-            "<BODY>Not Found</BODY></HTML>";
-
+                    "<HEAD><TITLE>Not Found</TITLE></HEAD>" +
+                    "<BODY>Not Found</BODY></HTML>";
         }
 
         /*Sending data*/
@@ -142,14 +135,9 @@ final class HttpRequest implements Runnable{
             System.out.println("A");
         }
         
-        System.out.println();
-        System.out.println();
-        System.out.println(fileExists);
-        System.out.println();
-        System.out.println();
-        
         // Close streams and socket.
         os.close();
+        is.close();//!!! verificar se tem q dar close 
         br.close();
         socket.close();               
     }
@@ -161,8 +149,11 @@ final class HttpRequest implements Runnable{
         if(fileName.endsWith(".gif")) {
             return "image/gif";
         }
-        if(fileName.endsWith(".jpeg")) {
+        if(fileName.endsWith(".jpeg") || fileName.endsWith(".jpg")) {
             return "image/jpeg";
+        }
+        if(fileName.endsWith(".png")) {
+            return "image/png";
         }
         return "application/octet-stream";
     }
