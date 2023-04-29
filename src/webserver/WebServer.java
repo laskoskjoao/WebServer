@@ -17,16 +17,12 @@ public class WebServer {
      */
     public static void main(String[] args) throws Exception{
         // TODO code application logic here
-        //CODE
         int port = 1998;
         
         // Establish the listen socket.
-        //CODE (SOCKET DE ESCUTA TCP)
         ServerSocket server = new ServerSocket(port);
         
-       // Process HTTP service requests in an infinite loop.
-       
-       int cont = 0;
+       // Process HTTP service requests in an infinite loop.     
         while (true) {
             // Listen for a TCP connection request.
             Socket client = server.accept();
@@ -70,6 +66,7 @@ final class HttpRequest implements Runnable{
         
         // reading the request line.
         String requestLine = br.readLine();
+        System.out.println("===REQUEST===");
         System.out.println(requestLine);
         
         // reading the header lines
@@ -121,6 +118,7 @@ final class HttpRequest implements Runnable{
         os.writeBytes(CRLF);
         
         System.out.println();
+        System.out.println("===RESPONSE===");
         System.out.println(statusLine);
         System.out.println(contentTypeLine);
         System.out.println(entityBody);
@@ -137,7 +135,7 @@ final class HttpRequest implements Runnable{
         
         // Close streams and socket.
         os.close();
-        is.close();//!!! verificar se tem q dar close 
+        is.close();
         br.close();
         socket.close();               
     }
@@ -167,5 +165,4 @@ final class HttpRequest implements Runnable{
             os.write(buffer, 0, bytes);
         }
     }
-
 }
