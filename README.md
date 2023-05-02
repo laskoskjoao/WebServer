@@ -8,7 +8,7 @@ Simple system of a multithreaded web server with version 1.0 of HTTP (RFC 1945),
 
 The system allows the user to access files through HTTP requests, which can be made using a web browser, as shown in the example below.
 
-
+![](https://github.com/laskoskjoao/WebServer/blob/main/gitImages/request.png)
 
 ## :heavy_exclamation_mark: Observations
 
